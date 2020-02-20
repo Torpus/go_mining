@@ -2,7 +2,11 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
+    "fmt"
+    "github.com/jaypipes/ghw"
+    //"net/http"
+    "regexp"
+    "strings"
 )
 
 const text =
@@ -115,7 +119,23 @@ func (n *Detail) UnmarshalJSON(buf []byte) error {
 	return nil
 }
 
+func getGpu() {
+    re := regexp.MustCompile(`\[(.*)\]`)
+    gpu, err := ghw.GPU()
+    if err != nil {
+        fmt.Printf("error getting GPU info: %v", err)
+    }
+
+    for _, card := range gpu.GraphicsCards {
+        name := re.FindString(card.DeviceInfo.Product.Name)
+        name = strings.Trim(name, "[")
+        name = strings.Trim(name, "]")
+        fmt.Println(name)
+    }
+}
+
 func main() {
+    getGpu()
 	var r Detail
 	if err := json.Unmarshal([]byte(text), &r); err != nil {
 		fmt.Println(err)
